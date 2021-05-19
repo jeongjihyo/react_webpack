@@ -1,0 +1,13 @@
+@font-face {
+  font-family: "SourceCodePro-Regular";
+  src: url("./SourceCodePro-Regular.otf") format("otf"),
+    url("./SourceCodePro-Regular.ttf") format("ttf");
+  font-weight: 600;
+  font-style: normal;
+}
+
+.hello {
+  color: red;
+  font-family: "SourceCodePro-Regular";
+  background: url("./icon.jpeg");
+}
