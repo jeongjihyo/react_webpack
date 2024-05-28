@@ -20,11 +20,11 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                 PR_NUMBER=${{ github.event.pull_request.number }}
-                echo "PR_NUMBER: $PR_NUMBER"
+                echo "PR_NUMBER----------------- $PR_NUMBER"
                 ISSUE_BODY=$(gh pr view $PR_NUMBER --json body --jq ".body")
-                echo "ISSUE_BODY: $ISSUE_BODY"
+                echo "ISSUE_BODY----------------- $ISSUE_BODY"
                 ISSUE_NUMBER=$(echo "$ISSUE_BODY" | grep -oP "(?<=Closes #)\d+")
-                echo "ISSUE_NUMBER: $ISSUE_NUMBER"
+                echo "ISSUE_NUMBER----------------- $ISSUE_NUMBER"
                 if [[ "$ISSUE_NUMBER" != "" ]]; then
                   gh issue edit $ISSUE_NUMBER --state closed
                 fi
@@ -34,7 +34,7 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                 BRANCH_NAME=${{ github.event.pull_request.head.ref }}
-                echo "BRANCH_NAME: $BRANCH_NAME"
+                echo "BRANCH_NAME----------------- $BRANCH_NAME"
                 if [[ "$BRANCH_NAME" != "" && "$BRANCH_NAME" != "develop" && "$BRANCH_NAME" != "master" ]]; then
                   git push origin --delete $BRANCH_NAME
                 fi
