@@ -14,13 +14,19 @@ jobs:
             - name: Checkout code
               uses: actions/checkout@v2
 
-            - name: Close related issues
+            - name: Debug PR and Issue Information
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
+                echo "Event path: $GITHUB_EVENT_PATH"
+                cat $GITHUB_EVENT_PATH
                 PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+                echo "PR_NUMBER: $PR_NUMBER"
                 if [[ "$PR_NUMBER" != "null" ]]; then
-                  ISSUE_NUMBER=$(gh pr view $PR_NUMBER --json body --jq ".body" | grep -oP "(?<=Closes #)\d+")
+                  ISSUE_BODY=$(gh pr view $PR_NUMBER --json body --jq ".body")
+                  echo "ISSUE_BODY: $ISSUE_BODY"
+                  ISSUE_NUMBER=$(echo "$ISSUE_BODY" | grep -oP "(?<=Closes #)\d+")
+                  echo "ISSUE_NUMBER: $ISSUE_NUMBER"
                   if [[ "$ISSUE_NUMBER" != "" ]]; then
                     gh issue edit $ISSUE_NUMBER --state closed
                   fi
@@ -31,8 +37,10 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
                 PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+                echo "PR_NUMBER: $PR_NUMBER"
                 if [[ "$PR_NUMBER" != "null" ]]; then
                   BRANCH_NAME=$(gh pr view $PR_NUMBER --json headRefName --jq ".headRefName")
+                  echo "BRANCH_NAME: $BRANCH_NAME"
                   if [[ "$BRANCH_NAME" != "" && "$BRANCH_NAME" != "develop" && "$BRANCH_NAME" != "master" ]]; then
                     git push origin --delete $BRANCH_NAME
                   fi
