@@ -1,0 +1,47 @@
+name: Close Issue and Delete Branch on Merge to Develop
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    close-issue-and-delete-branch:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v2
+
+            - name: Set up GitHub CLI
+              uses: actions/setup-node@v3
+              with:
+                  node-version: '14'
+            - run: npm install -g @actions/github @actions/core
+
+            - name: Close related issues
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+                  if [[ "$PR_NUMBER" != "null" ]]; then
+                    ISSUE_NUMBER=$(gh pr view $PR_NUMBER --json body --jq ".body" | grep -oP "(?<=Closes #)\d+")
+                    if [[ "$ISSUE_NUMBER" != "" ]]; then
+                      curl -s -X PATCH \
+                        -H "Accept: application/vnd.github.v3+json" \
+                        -H "Authorization: token $GITHUB_TOKEN" \
+                        https://api.github.com/repos/${{ github.repository }}/issues/$ISSUE_NUMBER \
+                        -d '{"state":"closed"}'
+                    fi
+                  fi
+
+            - name: Delete branch
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
+                  if [[ "$PR_NUMBER" != "null" ]]; then
+                    BRANCH_NAME=$(gh pr view $PR_NUMBER --json headRefName --jq ".headRefName")
+                    if [[ "$BRANCH_NAME" != "" && "$BRANCH_NAME" != "develop" ]]; then
+                      git push origin --delete $BRANCH_NAME
+                    fi
+                  fi

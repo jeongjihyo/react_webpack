@@ -1,0 +1,21 @@
+name: Auto Assign New Issue Creator
+
+on:
+    issues:
+        types: [opened]
+
+jobs:
+    assign:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v2
+
+            - name: Auto Assign New Issue Creator
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  ISSUE_CREATOR=$(jq -r '.issue.user.login' $GITHUB_EVENT_PATH)
+                  echo "Issue creator is $ISSUE_CREATOR"
+                  # Issue creator를 Assignees로 할당
+                  gh issue edit ${{ github.event.issue.number }} --add-assignee "$ISSUE_CREATOR"
