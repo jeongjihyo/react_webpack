@@ -1,4 +1,4 @@
-name: Close Issue and Delete Branch on Merge to Develop
+name: Close Issue and Delete Branch on Merge to Master
 
 on:
     push:
@@ -8,33 +8,32 @@ on:
 jobs:
     close-issue-and-delete-branch:
         runs-on: ubuntu-latest
+        container:
+            image: ghcr.io/github/super-linter:latest
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
-
-            - name: Set up GitHub CLI
-              uses: actions/setup-gh@v2
 
             - name: Close related issues
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-                  if [[ "$PR_NUMBER" != "null" ]]; then
-                    ISSUE_NUMBER=$(gh pr view $PR_NUMBER --json body --jq ".body" | grep -oP "(?<=Closes #)\d+")
-                    if [[ "$ISSUE_NUMBER" != "" ]]; then
-                      gh issue edit $ISSUE_NUMBER --state closed
-                    fi
+                PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+                if [[ "$PR_NUMBER" != "null" ]]; then
+                  ISSUE_NUMBER=$(gh pr view $PR_NUMBER --json body --jq ".body" | grep -oP "(?<=Closes #)\d+")
+                  if [[ "$ISSUE_NUMBER" != "" ]]; then
+                    gh issue edit $ISSUE_NUMBER --state closed
                   fi
+                fi
 
             - name: Delete branch
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-                  if [[ "$PR_NUMBER" != "null" ]]; then
-                    BRANCH_NAME=$(gh pr view $PR_NUMBER --json headRefName --jq ".headRefName")
-                    if [[ "$BRANCH_NAME" != "" && "$BRANCH_NAME" != "develop" && "$BRANCH_NAME" != "master" ]]; then
-                      git push origin --delete $BRANCH_NAME
-                    fi
+                PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+                if [[ "$PR_NUMBER" != "null" ]]; then
+                  BRANCH_NAME=$(gh pr view $PR_NUMBER --json headRefName --jq ".headRefName")
+                  if [[ "$BRANCH_NAME" != "" && "$BRANCH_NAME" != "develop" && "$BRANCH_NAME" != "master" ]]; then
+                    git push origin --delete $BRANCH_NAME
                   fi
+                fi
