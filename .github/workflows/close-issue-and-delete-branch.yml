@@ -23,7 +23,7 @@ jobs:
                 ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -Eo 'feature-issue#[0-9]+' | grep -Eo '[0-9]+')
                 echo "ISSUE_NUMBER: $ISSUE_NUMBER"
                 if [[ "$ISSUE_NUMBER" != "" ]]; then
-                  gh issue edit $ISSUE_NUMBER --state closed
+                  gh issue close $ISSUE_NUMBER
                 fi
 
             - name: Delete branch
