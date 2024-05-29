@@ -9,8 +9,6 @@ jobs:
     close-issue-and-delete-branch:
         if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'master'
         runs-on: ubuntu-latest
-        container:
-            image: ghcr.io/github/super-linter:latest
         steps:
             - name: Checkout code
               uses: actions/checkout@v2
@@ -22,7 +20,7 @@ jobs:
                 BRANCH_NAME=${{ github.event.pull_request.head.ref }}
                 echo "BRANCH_NAME: $BRANCH_NAME"
                 # Extract issue number from branch name (assuming branch name is like feature-issue#123)
-                ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -oP "(?<=feature-issue#)\d+")
+                ISSUE_NUMBER=$(echo "$BRANCH_NAME" | grep -Eo 'feature-issue#[0-9]+' | grep -Eo '[0-9]+')
                 echo "ISSUE_NUMBER: $ISSUE_NUMBER"
                 if [[ "$ISSUE_NUMBER" != "" ]]; then
                   gh issue edit $ISSUE_NUMBER --state closed
